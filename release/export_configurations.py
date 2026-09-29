@@ -11,7 +11,8 @@ reads the export folder <raw>\<patch>\<carrier>\<cluster>\<ant>\<power>\ and wri
   configurations.csv         one row per configuration: grid geometry and reference carrier
   transmitters.csv           one row per map in meta.csv: the transmitter's record
 
-All variants of one tile (4 antennas x 3 powers) share one EMF grid, so their maps line up.
+Each configuration keeps HTZ's own calculation grid (its spacing is measured from the points, 2 m
+for most tiles). All variants of one tile (4 antennas x 3 powers) cover the same extent.
 <config> is <patch>_<carrier>_<cluster>_<ant>_<power>. Nothing under <raw> is modified.
 Re-running skips configurations already listed in configurations.csv.
 
@@ -30,7 +31,22 @@ from PIL import Image
 from pyproj import Transformer
 
 KEY = ["patch", "freq_dir", "cluster", "ant", "power_dir"]
-STEP = 2.0                                     # HTZ calculation grid (m)
+STEP = 2.0                                     # default HTZ calculation grid (m)
+
+
+def grid_step(v):
+    """Spacing (m) of the lattice the projected coordinates v lie on.
+
+    lon/lat are written with 6 decimals, so projected points scatter by about 0.1 m around their
+    lattice position. Values closer than 0.5 m are merged into one lattice position first.
+    """
+    u = np.unique(np.round(v, 2))
+    if len(u) < 2:
+        return STEP
+    groups = np.split(u, np.where(np.diff(u) > 0.5)[0] + 1)
+    centres = np.array([grp.mean() for grp in groups])
+    gaps = np.diff(centres)
+    return round(float(np.median(gaps)), 2) if len(gaps) else STEP
 TX_FIELDS = ["location", "latitude", "longitude", "technology", "site_type", "tx_frequency",
              "tx_power", "tx_ant_azimuth", "tx_ant_elevation_angle", "structure_height",
              "tx_ant_height", "height", "tx_ant_gain", "tx_line_loss"]
@@ -111,22 +127,26 @@ def main():
         epsg = 26900 + zone                                        # NAD83 / UTM zone
         tr = Transformer.from_crs("EPSG:4269", f"EPSG:{epsg}", always_xy=True)
         xy = {k: tr.transform(d[2], d[3]) for k, d in data.items()}
-        x0 = min(v[0].min() for v in xy.values())
-        y0 = max(v[1].max() for v in xy.values())
-        width = int(round((max(v[0].max() for v in xy.values()) - x0) / STEP)) + 1
-        height = int(round((y0 - min(v[1].min() for v in xy.values())) / STEP)) + 1
+        ux0 = min(v[0].min() for v in xy.values()); ux1 = max(v[0].max() for v in xy.values())
+        uy0 = min(v[1].min() for v in xy.values()); uy1 = max(v[1].max() for v in xy.values())
 
         for key, (folder, g, lon, lat, e, freq) in data.items():
             config = g.config.iloc[0]
             if config in done:
                 continue
             x, y = xy[key]
-            col, row = (x - x0) / STEP, (y0 - y) / STEP
+            step = min(grid_step(x), grid_step(y))
+            # this configuration's own lattice, extended to the tile's full extent
+            x0 = x.min() - np.floor((x.min() - ux0) / step + 0.5) * step
+            y0 = y.max() + np.floor((uy1 - y.max()) / step + 0.5) * step
+            col, row = (x - x0) / step, (y0 - y) / step
             ci, ri = np.round(col).astype(int), np.round(row).astype(int)
             resid = max(np.abs(col - ci).max(), np.abs(row - ri).max())
             if resid > 0.25:
-                problems.append((config, f"points not on a {STEP:g} m grid (residual {resid:.2f} cells)"))
+                problems.append((config, f"points not on a regular grid (step {step} m, residual {resid:.2f} cells)"))
                 continue
+            width = max(int(np.floor((ux1 - x0) / step + 0.5)) + 1, ci.max() + 1)
+            height = max(int(np.floor((y0 - uy0) / step + 0.5)) + 1, ri.max() + 1)
             grid = np.zeros((height, width), np.uint8)
             grid[ri, ci] = np.clip(np.round(e), 0, 255).astype(np.uint8)
             try:
@@ -138,15 +158,19 @@ def main():
                         raise ValueError(f"azimuth mismatch for {r.name}")
                     tx.append({"name": r.name, **{f: rec.get(f, "") for f in TX_FIELDS}})
                 Image.fromarray(grid, mode="L").save(os.path.join(a.out, "emf", config + ".png"))
-                for src, sub in (("coverage.BMP", "coverage_rgb"), ("layout.BMP", "layout"), ("object.BMP", "object")):
-                    Image.open(os.path.join(folder, src)).save(os.path.join(a.out, sub, config + ".png"))
             except Exception as ex:
                 problems.append((config, str(ex)))
                 continue
+            for src, sub in (("coverage.BMP", "coverage_rgb"), ("layout.BMP", "layout"), ("object.BMP", "object")):
+                path = os.path.join(folder, src)
+                if os.path.exists(path):                       # a missing image does not stop the rest
+                    Image.open(path).save(os.path.join(a.out, sub, config + ".png"))
+                else:
+                    problems.append((config, f"no {src} (other files exported)"))
             append_csv(tx_csv, ["name"] + TX_FIELDS, tx)
             append_csv(conf_csv, CONF_FIELDS, [dict(config=config, patch=key[0], carrier=key[1],
-                       cluster=key[2], ant=key[3], power=key[4], epsg=epsg, x0=round(x0, 3),
-                       y0=round(y0, 3), step_m=STEP, width=width, height=height,
+                       cluster=key[2], ant=key[3], power=key[4], epsg=epsg, x0=round(float(x0), 3),
+                       y0=round(float(y0), 3), step_m=step, width=width, height=height,
                        n_points=len(e), ref_frequency_mhz=freq)])
             done.add(config)
         if t % 20 == 0:
@@ -159,7 +183,7 @@ def main():
     if problems:
         with open(os.path.join(a.out, "export_problems.csv"), "w", newline="", encoding="utf-8") as f:
             csv.writer(f).writerows([("config", "problem"), *problems])
-        print(f"{len(problems)} configurations not exported -> export_problems.csv")
+        print(f"{len(problems)} problems -> export_problems.csv")
 
 
 if __name__ == "__main__":
