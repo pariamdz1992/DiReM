@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use DiReM, please cite it as below."
+title: "DiReM: Directional Real-deployment Multiband Radio Maps"
+authors:
+  - family-names: "Mohammadzadeh Hesar"
+    given-names: "Paria"
+  - family-names: "Chiaraviglio"
+    given-names: "Luca"
+  - family-names: "Tabassum"
+    given-names: "Hina"
+repository-code: "https://github.com/pariamdz1992/DiReM"
+license: MIT
+preferred-citation:
+  type: article
+  title: "Deployment-Derived Directional Multiband Radio Maps with Prior-Anchored Reconstruction"
+  authors:
+    - family-names: "Mohammadzadeh Hesar"
+      given-names: "Paria"
+    - family-names: "Chiaraviglio"
+      given-names: "Luca"
+    - family-names: "Tabassum"
+      given-names: "Hina"
+  year: 2026
+  notes: "Under review."
