@@ -34,6 +34,7 @@ See [docs/PROCESSING.md](docs/PROCESSING.md) for the exact definitions.
 | [`generation/htz_automation.py`](generation/htz_automation.py) | drives HTZ to produce the exports |
 | [`generation/antennas/`](generation/antennas/) | the four antenna pattern files (`Ant1`–`Ant4`, MSI format) |
 | [`pipeline/`](pipeline/) | the processing scripts that built the training maps |
+| [`release/`](release/) | the scripts that package and upload the data records |
 
 ## Citation
 
