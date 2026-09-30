@@ -49,9 +49,9 @@ if len(meta) == 122021 and sizes != [81297, 25613, 15111]:
 EOF
 
 # 3. archives (PNGs are already compressed, so plain tar)
-tar -cf "$OUT/cond.tar" -C "$PREP" cond
-tar -cf "$OUT/target.tar" -C "$PREP" target
-tar -cf "$OUT/target_rgb.tar" -C "$RGB" target_rgb
+tar -chf "$OUT/cond.tar" -C "$PREP" cond
+tar -chf "$OUT/target.tar" -C "$PREP" target
+tar -chf "$OUT/target_rgb.tar" -C "$RGB" target_rgb
 cp "$PREP/meta.csv" "$RGB/colormap_refs.npz" "$OUT/"
 
 # 4. checksums
