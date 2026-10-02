@@ -30,6 +30,7 @@ See [docs/PROCESSING.md](docs/PROCESSING.md) for the exact definitions.
 |---|---|
 | [`docs/GENERATION.md`](docs/GENERATION.md) | how the maps were generated: source records, clustering, HTZ settings, exported files |
 | [`docs/PROCESSING.md`](docs/PROCESSING.md) | how the HTZ exports became the training maps |
+| [`docs/DiReM_Supplementary_Material.pdf`](docs/DiReM_Supplementary_Material.pdf) | supplementary material of the paper: data and supervision, benchmark protocol, metric definitions, output representation and RadioBridge details |
 | [`generation/process_and_modify_clusters.py`](generation/process_and_modify_clusters.py) | clusters each carrier CSV into 1 km groups and writes the per-cluster HTZ input files |
 | [`generation/htz_automation.py`](generation/htz_automation.py) | drives HTZ to produce the exports |
 | [`generation/antennas/`](generation/antennas/) | the four antenna pattern files (`Ant1`–`Ant4`, MSI format) |
@@ -40,8 +41,11 @@ See [docs/PROCESSING.md](docs/PROCESSING.md) for the exact definitions.
 
 If you use DiReM, please cite:
 
-> P. Mohammadzadeh Hesar, L. Chiaraviglio and H. Tabassum, "Deployment-Derived Directional
-> Multiband Radio Maps with Prior-Anchored Reconstruction," under review, 2026.
+> P. Mohammadzadeh Hesar, L. Chiaraviglio and H. Tabassum, "Learning-Based Radio Map
+> Reconstruction: DiReM Dataset and RadioBridge Framework," under review, 2026.
+
+The paper's supplementary material is in
+[docs/DiReM_Supplementary_Material.pdf](docs/DiReM_Supplementary_Material.pdf).
 
 ## Sources and attribution
 

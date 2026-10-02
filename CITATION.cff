@@ -12,7 +12,7 @@ repository-code: "https://github.com/pariamdz1992/DiReM"
 license: MIT
 preferred-citation:
   type: article
-  title: "Deployment-Derived Directional Multiband Radio Maps with Prior-Anchored Reconstruction"
+  title: "Learning-Based Radio Map Reconstruction: DiReM Dataset and RadioBridge Framework"
   authors:
     - family-names: "Mohammadzadeh Hesar"
       given-names: "Paria"
