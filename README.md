@@ -13,7 +13,7 @@ Aylmer, Peterborough and Woodfibre. Collection is ongoing; the current release c
 
 | record | content | link |
 |---|---|---|
-| DiReM v1 (frozen) | the 122,021 single-transmitter maps used for training and evaluation in the paper, with inputs, colour-mapped targets, metadata, the paper's split and EMF maps | *to come* |
+| DiReM v1 (frozen) | the 122,021 single-transmitter maps used for training and evaluation in the paper, with inputs, colour-mapped targets, metadata, the paper's split and EMF maps | [huggingface.co/datasets/Pariamdz/DiReM-v1](https://huggingface.co/datasets/Pariamdz/DiReM-v1) |
 | DiReM (growing) | all maps collected up to the version date, updated as collection continues | *to come* |
 
 Each sample has:
